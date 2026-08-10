@@ -13,7 +13,7 @@ public class JwtTokenGeneratorTests
     [Fact]
     public void GenerateToken_AddsUserAndRoleClaims()
     {
-        var options = Options.Create(new JwtOptions
+        var options = Microsoft.Extensions.Options.Options.Create(new JwtOptions
         {
             Secret = "test-secret-with-at-least-thirty-two-characters",
             Issuer = "LaboratoryJournal.Tests",
@@ -40,7 +40,7 @@ public class JwtTokenGeneratorTests
     [Fact]
     public void GenerateToken_UsesConfiguredLifetime()
     {
-        var options = Options.Create(new JwtOptions
+        var options = Microsoft.Extensions.Options.Options.Create(new JwtOptions
         {
             Secret = "test-secret-with-at-least-thirty-two-characters",
             Issuer = "LaboratoryJournal.Tests",
