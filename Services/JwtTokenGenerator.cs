@@ -4,7 +4,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
 using LaboratoryJournal.Models;
+using LaboratoryJournal.Options;
 
 namespace LaboratoryJournal.Services
 {
@@ -13,13 +15,15 @@ namespace LaboratoryJournal.Services
         private readonly string _secret;
         private readonly string _issuer;
         private readonly string _audience;
-        private readonly int _expirationMinutes = 1440; // 24 hours
+        private readonly int _expirationMinutes;
 
-        public JwtTokenGenerator(string secret, string issuer, string audience)
+        public JwtTokenGenerator(IOptions<JwtOptions> options)
         {
-            _secret = secret;
-            _issuer = issuer;
-            _audience = audience;
+            var settings = options.Value;
+            _secret = settings.Secret;
+            _issuer = settings.Issuer;
+            _audience = settings.Audience;
+            _expirationMinutes = settings.ExpirationMinutes;
         }
 
         public string GenerateToken(ApplicationUser user, IList<string> roles)

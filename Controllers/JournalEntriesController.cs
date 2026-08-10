@@ -185,9 +185,9 @@ namespace LaboratoryJournal.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            // Проверка, что эксперимент существует
+            // Проверка, что эксперимент существует и принадлежит пользователю
             var experiment = await _context.Experiments
-                .FirstOrDefaultAsync(e => e.Id == request.ExperimentId);
+                .FirstOrDefaultAsync(e => e.Id == request.ExperimentId && e.ResearcherId == userId);
 
             if (experiment == null)
                 return NotFound(new { message = "Эксперимент не найден" });

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using LaboratoryJournal.Models;
 using LaboratoryJournal.Services;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LaboratoryJournal.Controllers
 {
@@ -11,6 +12,7 @@ namespace LaboratoryJournal.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -34,6 +36,7 @@ namespace LaboratoryJournal.Controllers
         /// Регистрация нового пользователя
         /// </summary>
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid)
@@ -67,6 +70,7 @@ namespace LaboratoryJournal.Controllers
         /// Вход в систему
         /// </summary>
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             if (!ModelState.IsValid)

@@ -21,7 +21,6 @@ bld/
 *.user
 *.userosscache
 *.sln.docstates
-*.sln
 *.vcxproj.user
 *.vcxproj.filters
 
@@ -51,9 +50,6 @@ appsettings.local.json
 *.sqlite
 *.mdf
 *.ldf
-
-# Entity Framework
-Migrations/
 
 # Package manager
 packages/
