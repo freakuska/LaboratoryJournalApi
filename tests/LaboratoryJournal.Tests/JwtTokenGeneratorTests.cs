@@ -4,6 +4,7 @@ using LaboratoryJournal.Models;
 using LaboratoryJournal.Options;
 using LaboratoryJournal.Services;
 using Microsoft.Extensions.Options;
+using Xunit;
 
 namespace LaboratoryJournal.Tests;
 
