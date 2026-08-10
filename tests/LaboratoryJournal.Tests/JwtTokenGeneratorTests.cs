@@ -32,9 +32,9 @@ public class JwtTokenGeneratorTests
         var token = generator.GenerateToken(user, ["Researcher"]);
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
-        Assert.Contains(jwt.Claims, claim => claim.Type == ClaimTypes.NameIdentifier && claim.Value == user.Id);
-        Assert.Contains(jwt.Claims, claim => claim.Type == ClaimTypes.Email && claim.Value == user.Email);
-        Assert.Contains(jwt.Claims, claim => claim.Type == ClaimTypes.Role && claim.Value == "Researcher");
+        Assert.Contains(jwt.Claims, claim => claim.Type == "nameid" && claim.Value == user.Id);
+        Assert.Contains(jwt.Claims, claim => claim.Type == "email" && claim.Value == user.Email);
+        Assert.Contains(jwt.Claims, claim => claim.Type == "role" && claim.Value == "Researcher");
     }
 
     [Fact]
