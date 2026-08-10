@@ -18,17 +18,17 @@ namespace LaboratoryJournal.Models
         /// <summary>
         /// ID автора записи
         /// </summary>
-        public string AuthorId { get; set; }
+        public string AuthorId { get; set; } = string.Empty;
 
         /// <summary>
         /// Заголовок записи
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         /// <summary>
         /// Содержание записи
         /// </summary>
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
 
         /// <summary>
         /// Тип записи (наблюдение, результат, проблема и т.д.)
@@ -43,12 +43,12 @@ namespace LaboratoryJournal.Models
         /// <summary>
         /// Теги для поиска
         /// </summary>
-        public string Tags { get; set; }
+        public string Tags { get; set; } = string.Empty;
 
         /// <summary>
         /// Вложения/ссылки на файлы
         /// </summary>
-        public string Attachments { get; set; }
+        public string Attachments { get; set; } = string.Empty;
 
         /// <summary>
         /// Дата и время создания записи
@@ -66,8 +66,8 @@ namespace LaboratoryJournal.Models
         public bool IsArchived { get; set; } = false;
 
         // Навигационные свойства
-        public virtual Experiment Experiment { get; set; }
-        public virtual ApplicationUser Author { get; set; }
+        public virtual Experiment Experiment { get; set; } = null!;
+        public virtual ApplicationUser Author { get; set; } = null!;
     }
 
     /// <summary>

@@ -18,22 +18,22 @@ namespace LaboratoryJournal.Models
         /// <summary>
         /// Название результата/измерения
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Описание результата
         /// </summary>
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
         /// Значение результата
         /// </summary>
-        public string Value { get; set; }
+        public string Value { get; set; } = string.Empty;
 
         /// <summary>
         /// Единица измерения
         /// </summary>
-        public string Unit { get; set; }
+        public string Unit { get; set; } = string.Empty;
 
         /// <summary>
         /// Тип данных результата
@@ -48,7 +48,7 @@ namespace LaboratoryJournal.Models
         /// <summary>
         /// Примечания
         /// </summary>
-        public string Notes { get; set; }
+        public string Notes { get; set; } = string.Empty;
 
         /// <summary>
         /// Дата записи результата
@@ -61,7 +61,7 @@ namespace LaboratoryJournal.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Навигационные свойства
-        public virtual Experiment Experiment { get; set; }
+        public virtual Experiment Experiment { get; set; } = null!;
     }
 
     /// <summary>

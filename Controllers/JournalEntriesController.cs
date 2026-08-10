@@ -10,7 +10,7 @@ namespace LaboratoryJournal.Controllers
     /// Контроллер управления записями в лабораторном журнале
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/journal-entries")]
     [Authorize]
     public class JournalEntriesController : ControllerBase
     {
@@ -26,6 +26,57 @@ namespace LaboratoryJournal.Controllers
         /// <summary>
         /// Получить записи для конкретного эксперимента
         /// </summary>
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<object>>> GetEntries(
+            [FromQuery] string searchTerm = "",
+            [FromQuery] EntryType? entryType = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var query = _context.JournalEntries
+                .Where(j => j.Experiment.ResearcherId == userId && !j.IsArchived)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(j =>
+                    j.Title.Contains(searchTerm) ||
+                    j.Content.Contains(searchTerm) ||
+                    j.Tags.Contains(searchTerm));
+            }
+
+            if (entryType.HasValue)
+            {
+                query = query.Where(j => j.Type == entryType.Value);
+            }
+
+            var total = await query.CountAsync();
+            var entries = await query
+                .OrderByDescending(j => j.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(j => new
+                {
+                    j.Id,
+                    j.ExperimentId,
+                    j.Title,
+                    j.Content,
+                    j.Type,
+                    j.Priority,
+                    j.Tags,
+                    j.CreatedAt,
+                    j.UpdatedAt,
+                    Author = j.Author.FullName
+                })
+                .ToListAsync();
+
+            return Ok(new { total, pageNumber, pageSize, data = entries });
+        }
+
         [HttpGet("experiment/{experimentId}")]
         public async Task<ActionResult<IEnumerable<object>>> GetEntriesByExperiment(
             int experimentId,
@@ -282,21 +333,21 @@ namespace LaboratoryJournal.Controllers
     public class CreateJournalEntryRequest
     {
         public int ExperimentId { get; set; }
-        public string Title { get; set; }
-        public string Content { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
         public EntryType Type { get; set; }
         public Priority? Priority { get; set; }
-        public string Tags { get; set; }
-        public string Attachments { get; set; }
+        public string Tags { get; set; } = string.Empty;
+        public string Attachments { get; set; } = string.Empty;
     }
 
     public class UpdateJournalEntryRequest
     {
-        public string Title { get; set; }
-        public string Content { get; set; }
+        public string? Title { get; set; }
+        public string? Content { get; set; }
         public EntryType? Type { get; set; }
         public Priority? Priority { get; set; }
-        public string Tags { get; set; }
-        public string Attachments { get; set; }
+        public string? Tags { get; set; }
+        public string? Attachments { get; set; }
     }
 }

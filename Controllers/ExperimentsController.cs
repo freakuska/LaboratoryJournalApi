@@ -214,20 +214,20 @@ namespace LaboratoryJournal.Controllers
     // DTO классы
     public class CreateExperimentRequest
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Objective { get; set; }
-        public string Methodology { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Objective { get; set; } = string.Empty;
+        public string Methodology { get; set; } = string.Empty;
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
     }
 
     public class UpdateExperimentRequest
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Objective { get; set; }
-        public string Methodology { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public string? Objective { get; set; }
+        public string? Methodology { get; set; }
         public ExperimentStatus? Status { get; set; }
         public DateTime? EndDate { get; set; }
     }

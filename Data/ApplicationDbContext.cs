@@ -58,7 +58,7 @@ namespace LaboratoryJournal.Data
                 .HasMany(e => e.JournalEntries)
                 .WithOne(j => j.Experiment)
                 .HasForeignKey(j => j.ExperimentId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             // Индексы для оптимизации поиска
             modelBuilder.Entity<Experiment>()

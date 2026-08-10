@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using LaboratoryJournal.Models;
+using LaboratoryJournal.Services;
 using System.ComponentModel.DataAnnotations;
 
 namespace LaboratoryJournal.Controllers
@@ -14,15 +15,18 @@ namespace LaboratoryJournal.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly JwtTokenGenerator _tokenGenerator;
         private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            JwtTokenGenerator tokenGenerator,
             ILogger<AuthController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _tokenGenerator = tokenGenerator;
             _logger = logger;
         }
 
@@ -86,12 +90,14 @@ namespace LaboratoryJournal.Controllers
             await _userManager.UpdateAsync(user);
 
             var roles = await _userManager.GetRolesAsync(user);
+            var token = _tokenGenerator.GenerateToken(user, roles);
 
             _logger.LogInformation($"Пользователь вошёл в систему: {user.Email}");
 
             return Ok(new
             {
                 message = "Успешный вход",
+                token = token,
                 user = new
                 {
                     id = user.Id,
@@ -169,43 +175,43 @@ namespace LaboratoryJournal.Controllers
     {
         [Required(ErrorMessage = "Email обязателен")]
         [EmailAddress(ErrorMessage = "Некорректный формат email")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Пароль обязателен")]
         [MinLength(8, ErrorMessage = "Пароль должен содержать минимум 8 символов")]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Подтверждение пароля обязательно")]
         [Compare("Password", ErrorMessage = "Пароли не совпадают")]
-        public string ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Полное имя обязательно")]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
 
-        public string Position { get; set; }
+        public string Position { get; set; } = string.Empty;
     }
 
     public class LoginRequest
     {
         [Required(ErrorMessage = "Email обязателен")]
         [EmailAddress(ErrorMessage = "Некорректный формат email")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Пароль обязателен")]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
     }
 
     public class ChangePasswordRequest
     {
         [Required(ErrorMessage = "Текущий пароль обязателен")]
-        public string OldPassword { get; set; }
+        public string OldPassword { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Новый пароль обязателен")]
         [MinLength(8, ErrorMessage = "Пароль должен содержать минимум 8 символов")]
-        public string NewPassword { get; set; }
+        public string NewPassword { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Подтверждение пароля обязательно")]
         [Compare("NewPassword", ErrorMessage = "Пароли не совпадают")]
-        public string ConfirmNewPassword { get; set; }
+        public string ConfirmNewPassword { get; set; } = string.Empty;
     }
 }

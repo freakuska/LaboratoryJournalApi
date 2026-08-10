@@ -1,0 +1,470 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratory Journal Pro - Профессиональное управление экспериментами</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-light">
+    <div class="d-flex" style="height: 100vh;">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar bg-dark text-white shadow" id="sidebar">
+            <div class="sidebar-header p-4 border-bottom border-secondary">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="app-icon">
+                        <i class="bi bi-flask-fill" style="font-size: 2rem; color: #0dcaf0;"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">Lab Journal Pro</h5>
+                        <small class="text-muted">v1.0</small>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav p-3">
+                <div id="auth-nav" style="display:none;">
+                    <a href="javascript:" class="nav-link-sidebar active" data-view="dashboard" onclick="window.UI.showView('dashboard'); Experiments.load(); Entries.load(); Results.load(); Dashboard.loadStats();">
+                        <i class="bi bi-speedometer2"></i> <span class="ms-2">Панель</span>
+                    </a>
+                    <a href="javascript:" class="nav-link-sidebar" data-view="experiments" onclick="window.UI.showView('experiments'); window.Experiments.load();">
+                        <i class="bi bi-flask"></i> <span class="ms-2">Эксперименты</span>
+                    </a>
+                    <a href="javascript:" class="nav-link-sidebar" data-view="entries" onclick="window.UI.showView('entries'); window.Entries.load();">
+                        <i class="bi bi-journal-text"></i> <span class="ms-2">Записи</span>
+                    </a>
+                    <a href="javascript:" class="nav-link-sidebar" data-view="results" onclick="window.UI.showView('results'); window.Results.load();">
+                        <i class="bi bi-graph-up"></i> <span class="ms-2">Результаты</span>
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer p-3 border-top border-secondary mt-auto">
+                <div id="user-panel" style="display:none;" class="mb-3">
+                    <div class="text-muted small mb-2">Пользователь</div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-secondary p-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold small" id="user-name">-</div>
+                            <small class="text-muted" id="user-email">-</small>
+                        </div>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn btn-outline-light btn-sm w-100" style="display:none;" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> Выход
+                </button>
+                <button id="login-btn" class="btn btn-primary btn-sm w-100" style="display:none;" onclick="showView('auth')">
+                    <i class="bi bi-box-arrow-in-right"></i> Вход
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content flex-grow-1 overflow-auto">
+            <!-- Top Header Bar -->
+            <nav class="navbar navbar-light bg-white shadow-sm sticky-top mb-0">
+                <div class="container-fluid px-4">
+                    <span class="navbar-text">
+                        <i class="bi bi-info-circle"></i> <span id="page-title">Laboratory Journal Pro</span>
+                    </span>
+                </div>
+            </nav>
+
+            <!-- Alerts -->
+            <div id="alerts-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+
+            <!-- Content Area -->
+            <div class="content-wrapper p-4">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold" href="javascript:void(0)">
+                <i class="bi bi-flask-fill text-warning"></i> <span class="ms-2">Laboratory Journal</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="javascript:" onclick="goToPage('dashboard')">
+                            <i class="bi bi-speedometer2"></i> Панель
+                        </a>
+                    </li>
+                    <li class="nav-item" id="exp-nav-tab" style="display:none;">
+                        <a class="nav-link" href="javascript:" onclick="goToPage('experiments')">
+                            <i class="bi bi-flask"></i> Эксперименты
+                        </a>
+                    </li>
+                    <li class="nav-item" id="entries-nav-tab" style="display:none;">
+                        <a class="nav-link" href="javascript:" onclick="goToPage('entries')">
+                            <i class="bi bi-journal-text"></i> Записи
+                        </a>
+                    </li>
+                    <li class="nav-item" id="results-nav-tab" style="display:none;">
+                        <a class="nav-link" href="javascript:" onclick="goToPage('results')">
+                            <i class="bi bi-graph-up"></i> Результаты
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center ms-3 gap-2">
+                    <span id="user-display" class="text-light small" style="display:none;"></span>
+                    <button id="logout-btn-top" class="btn btn-outline-light btn-sm" style="display:none;" onclick="logout()">
+                        <i class="bi bi-box-arrow-right"></i> Выход
+                    </button>
+                    <button id="login-btn-top" class="btn btn-light btn-sm" style="display:none;" onclick="goToPage('auth')">
+                        <i class="bi bi-box-arrow-in-right"></i> Вход
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+<!-- Dashboard View -->
+                <div id="dashboard-view" class="view-container" style="display:block;">
+                    <div class="row mb-4">
+                        <div class="col">
+                            <h1 class="h3">Панель управления</h1>
+                            <p class="text-muted">Основная статистика и активность</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card stat-card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="stat-badge stat-badge-blue mb-3"><i class="bi bi-flask"></i></div>
+                                    <h3 class="stat-value" id="stat-exps">0</h3>
+                                    <p class="text-muted mb-0 small">Экспериментов</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card stat-card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="stat-badge stat-badge-green mb-3"><i class="bi bi-journal-text"></i></div>
+                                    <h3 class="stat-value" id="stat-entries">0</h3>
+                                    <p class="text-muted mb-0 small">Записей</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card stat-card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="stat-badge stat-badge-purple mb-3"><i class="bi bi-graph-up"></i></div>
+                                    <h3 class="stat-value" id="stat-results">0</h3>
+                                    <p class="text-muted mb-0 small">Результатов</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card stat-card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="stat-badge stat-badge-orange mb-3"><i class="bi bi-check-circle"></i></div>
+                                    <h3 class="stat-value" id="stat-completed">0</h3>
+                                    <p class="text-muted mb-0 small">Завершено</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-lg-7">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white border-bottom">
+                                    <h6 class="mb-0"><i class="bi bi-graph-up text-primary"></i> Активность</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="chart-stats" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white border-bottom">
+                                    <h6 class="mb-0"><i class="bi bi-pie-chart text-success"></i> Статус</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="chart-pie" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auth View -->
+                <div id="auth-view" class="view-container" style="display:none;">
+                    <div class="row justify-content-center">
+                        <div class="col-md-5 col-lg-4">
+                            <div class="card border-0 shadow-lg">
+                                <div class="card-body p-5">
+                                    <div class="text-center mb-4">
+                                        <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-flask" style="font-size: 2rem; color: white;"></i>
+                                        </div>
+                                        <h2 class="h4">Laboratory Journal</h2>
+                                        <p class="text-muted small">Профессиональное управление экспериментами</p>
+                                    </div>
+
+                                    <ul class="nav nav-tabs nav-fill mb-4" role="tablist">
+                                        <li class="nav-item">
+                                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#login-tab">Вход</button>
+                                        </li>
+                                        <li class="nav-item">
+                                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#register-tab">Регистрация</button>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content">
+                                        <div class="tab-pane fade show active" id="login-tab">
+                                            <form onsubmit="handleLogin(event)">
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Email</label>
+                                                    <input type="email" class="form-control form-control-lg" id="login-email" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Пароль</label>
+                                                    <input type="password" class="form-control form-control-lg" id="login-password" required>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right"></i> Войти</button>
+                                            </form>
+                                        </div>
+                                        <div class="tab-pane fade" id="register-tab">
+                                            <form onsubmit="handleRegister(event)">
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Имя</label>
+                                                    <input type="text" class="form-control form-control-lg" id="register-fullname" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Email</label>
+                                                    <input type="email" class="form-control form-control-lg" id="register-email" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Должность</label>
+                                                    <input type="text" class="form-control form-control-lg" id="register-position" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Пароль</label>
+                                                    <input type="password" class="form-control form-control-lg" id="register-password" placeholder="Мин. 8 символов" required>
+                                                    <small class="text-muted">Заглавная, строчная буква, цифра</small>
+                                                </div>
+                                                <button type="submit" class="btn btn-success w-100"><i class="bi bi-person-plus"></i> Зарегистрироваться</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experiments View -->
+                <div id="experiments-view" class="view-container" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3">Эксперименты</h1>
+                            <p class="text-muted">Управление научными экспериментами</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="window.openExpModal()"><i class="bi bi-plus-circle"></i> Новый</button>
+                    </div>
+                    <div class="row g-4" id="experiments-grid"><div class="col-12 text-center text-muted">Загрузка...</div></div>
+                </div>
+
+                <!-- Entries View -->
+                <div id="entries-view" class="view-container" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3">Записи в журнале</h1>
+                            <p class="text-muted">Документирование хода работ</p>
+                        </div>
+                        <button class="btn btn-success" onclick="window.openEntryModal()"><i class="bi bi-plus-circle"></i> Новая</button>
+                    </div>
+                    <div class="row g-4" id="entries-grid"><div class="col-12 text-center text-muted">Загрузка...</div></div>
+                </div>
+
+                <!-- Results View -->
+                <div id="results-view" class="view-container" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3">Результаты</h1>
+                            <p class="text-muted">Анализ полученных данных</p>
+                        </div>
+                        <button class="btn btn-info" onclick="window.openResultModal()"><i class="bi bi-plus-circle"></i> Новый</button>
+                    </div>
+                    <div class="row g-4" id="results-grid"><div class="col-12 text-center text-muted">Загрузка...</div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Experiment Modal -->
+    <div class="modal fade" id="expModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header bg-gradient text-white border-0">
+                    <h5 class="modal-title"><i class="bi bi-flask"></i> Новый эксперимент</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="exp-form" onsubmit="createExperiment(event)">
+                        <div class="mb-3">
+                            <label class="form-label">Название *</label>
+                            <input type="text" class="form-control" id="exp-title" maxlength="255" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Описание *</label>
+                            <textarea class="form-control" id="exp-desc" maxlength="2000" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Цель *</label>
+                            <textarea class="form-control" id="exp-objective" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Методология *</label>
+                            <textarea class="form-control" id="exp-methodology" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Дата начала *</label>
+                            <input type="date" class="form-control" id="exp-date" required>
+                        </div>
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-primary">Создать</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entry Modal -->
+    <div class="modal fade" id="entryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header bg-gradient text-white border-0" style="background: linear-gradient(135deg, #198754 0%, #20c997 100%) !important;">
+                    <h5 class="modal-title"><i class="bi bi-journal-text"></i> Новая запись</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="entry-form" onsubmit="createEntry(event)">
+                        <div class="mb-3">
+                            <label class="form-label">Эксперимент *</label>
+                            <select class="form-select" id="entry-exp" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Заголовок *</label>
+                            <input type="text" class="form-control" id="entry-title" maxlength="255" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Содержание *</label>
+                            <textarea class="form-control" id="entry-content" rows="4" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Тип *</label>
+                                <select class="form-select" id="entry-type" required>
+                                    <option value="">-</option>
+                                    <option value="0">Наблюдение</option>
+                                    <option value="1">Результат</option>
+                                    <option value="2">Проблема</option>
+                                    <option value="3">Заметка</option>
+                                    <option value="4">Процедура</option>
+                                    <option value="5">Заключение</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Приоритет *</label>
+                                <select class="form-select" id="entry-priority" required>
+                                    <option value="">-</option>
+                                    <option value="0">Низкий</option>
+                                    <option value="1">Средний</option>
+                                    <option value="2">Высокий</option>
+                                    <option value="3">Критический</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Теги</label>
+                            <input type="text" class="form-control" id="entry-tags" placeholder="Через запятую" maxlength="450">
+                        </div>
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-success">Создать</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="modal fade" id="resultModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header bg-gradient text-white border-0" style="background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%) !important;">
+                    <h5 class="modal-title"><i class="bi bi-graph-up"></i> Новый результат</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="result-form" onsubmit="createResult(event)">
+                        <div class="mb-3">
+                            <label class="form-label">Эксперимент *</label>
+                            <select class="form-select" id="result-exp" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Название *</label>
+                            <input type="text" class="form-control" id="result-name" maxlength="255" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Описание</label>
+                            <textarea class="form-control" id="result-desc" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Значение *</label>
+                                <input type="text" class="form-control" id="result-value" maxlength="1000" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Единица *</label>
+                                <input type="text" class="form-control" id="result-unit" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Тип данных *</label>
+                            <select class="form-select" id="result-datatype" required>
+                                <option value="">-</option>
+                                <option value="0">Число</option>
+                                <option value="1">Текст</option>
+                                <option value="2">Дата</option>
+                                <option value="3">Логический</option>
+                                <option value="4">URL</option>
+                                <option value="5">JSON</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Статус *</label>
+                            <select class="form-select" id="result-status" required>
+                                <option value="0">Ожидание</option>
+                                <option value="1">Проверено</option>
+                                <option value="2">Одобрено</option>
+                                <option value="3">Отклонено</option>
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-info">Создать</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script type="module" src="/js/app.js"></script>
+</body>
+</html>
+
+

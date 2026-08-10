@@ -10,12 +10,12 @@ namespace LaboratoryJournal.Models
         /// <summary>
         /// Полное имя пользователя
         /// </summary>
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
 
         /// <summary>
         /// Должность пользователя
         /// </summary>
-        public string Position { get; set; }
+        public string Position { get; set; } = string.Empty;
 
         /// <summary>
         /// Дата создания учётной записи

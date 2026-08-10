@@ -281,8 +281,8 @@ namespace LaboratoryJournal.Controllers
     // DTO классы
     public class AdvancedSearchRequest
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
         public ExperimentStatus? Status { get; set; }
         public DateTime? StartDateFrom { get; set; }
         public DateTime? StartDateTo { get; set; }

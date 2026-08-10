@@ -1,7 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using LaboratoryJournal.Data;
 using LaboratoryJournal.Models;
+using LaboratoryJournal.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +32,35 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+// JWT конфигурация
+var jwtSecret = configuration["Jwt:Secret"] ?? "your-secret-key-that-is-at-least-32-characters-long-for-security";
+var jwtIssuer = configuration["Jwt:Issuer"] ?? "LaboratoryJournal";
+var jwtAudience = configuration["Jwt:Audience"] ?? "LaboratoryJournalUsers";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+    };
+});
+
+// Добавить после конфигурации JWT
+builder.Services.AddScoped<JwtTokenGenerator>(sp => 
+    new JwtTokenGenerator(jwtSecret, jwtIssuer, jwtAudience)
+);
 
 // Добавление сервисов приложения
 builder.Services.AddControllers();
@@ -63,6 +96,7 @@ using (var scope = app.Services.CreateScope())
         context.Database.Migrate();
 
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         
         // Создание ролей по умолчанию
         if (!await roleManager.RoleExistsAsync("Admin"))
@@ -76,6 +110,28 @@ using (var scope = app.Services.CreateScope())
         if (!await roleManager.RoleExistsAsync("Moderator"))
         {
             await roleManager.CreateAsync(new IdentityRole("Moderator"));
+        }
+
+        // Создание демо-пользователя
+        var demoUser = await userManager.FindByEmailAsync("demo@lab.com");
+        if (demoUser == null)
+        {
+            var newUser = new ApplicationUser
+            {
+                UserName = "demo",
+                Email = "demo@lab.com",
+                EmailConfirmed = true,
+                FullName = "Демо Пользователь",
+                Position = "Исследователь",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await userManager.CreateAsync(newUser, "Demo@123456");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(newUser, "Researcher");
+                Console.WriteLine("✓ Демо-пользователь создан: demo@lab.com / Demo@123456");
+            }
         }
     }
     catch (Exception ex)
@@ -92,13 +148,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Health check
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
 app.Run();

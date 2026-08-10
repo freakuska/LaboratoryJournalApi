@@ -13,22 +13,22 @@ namespace LaboratoryJournal.Models
         /// <summary>
         /// Название эксперимента
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         /// <summary>
         /// Описание эксперимента
         /// </summary>
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
         /// Цель эксперимента
         /// </summary>
-        public string Objective { get; set; }
+        public string Objective { get; set; } = string.Empty;
 
         /// <summary>
         /// Методология проведения
         /// </summary>
-        public string Methodology { get; set; }
+        public string Methodology { get; set; } = string.Empty;
 
         /// <summary>
         /// Дата начала эксперимента
@@ -48,7 +48,7 @@ namespace LaboratoryJournal.Models
         /// <summary>
         /// ID исследователя (пользователя)
         /// </summary>
-        public string ResearcherId { get; set; }
+        public string ResearcherId { get; set; } = string.Empty;
 
         /// <summary>
         /// Дата создания записи
@@ -61,7 +61,7 @@ namespace LaboratoryJournal.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Навигационные свойства
-        public virtual ApplicationUser Researcher { get; set; }
+        public virtual ApplicationUser Researcher { get; set; } = null!;
         public virtual ICollection<ExperimentResult> Results { get; set; } = new List<ExperimentResult>();
         public virtual ICollection<JournalEntry> JournalEntries { get; set; } = new List<JournalEntry>();
     }

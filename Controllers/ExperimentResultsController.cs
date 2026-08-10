@@ -10,7 +10,7 @@ namespace LaboratoryJournal.Controllers
     /// Контроллер управления результатами экспериментов
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/experiment-results")]
     [Authorize]
     public class ExperimentResultsController : ControllerBase
     {
@@ -26,6 +26,51 @@ namespace LaboratoryJournal.Controllers
         /// <summary>
         /// Получить результаты для конкретного эксперимента
         /// </summary>
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<object>>> GetResults(
+            [FromQuery] string searchTerm = "",
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var query = _context.ExperimentResults
+                .Where(r => r.Experiment.ResearcherId == userId)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(r =>
+                    r.Name.Contains(searchTerm) ||
+                    r.Description.Contains(searchTerm) ||
+                    r.Value.Contains(searchTerm));
+            }
+
+            var total = await query.CountAsync();
+            var results = await query
+                .OrderByDescending(r => r.RecordedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.ExperimentId,
+                    r.Name,
+                    r.Description,
+                    r.Value,
+                    r.Unit,
+                    r.DataType,
+                    r.Status,
+                    r.RecordedAt,
+                    r.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new { total, pageNumber, pageSize, data = results });
+        }
+
         [HttpGet("experiment/{experimentId}")]
         public async Task<ActionResult<IEnumerable<object>>> GetResultsByExperiment(
             int experimentId,
@@ -270,22 +315,22 @@ namespace LaboratoryJournal.Controllers
     public class CreateExperimentResultRequest
     {
         public int ExperimentId { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Value { get; set; }
-        public string Unit { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public string Unit { get; set; } = string.Empty;
         public DataType DataType { get; set; }
-        public string Notes { get; set; }
+        public string Notes { get; set; } = string.Empty;
         public DateTime? RecordedAt { get; set; }
     }
 
     public class UpdateExperimentResultRequest
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Value { get; set; }
-        public string Unit { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public string? Value { get; set; }
+        public string? Unit { get; set; }
         public ResultStatus? Status { get; set; }
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
     }
 }
